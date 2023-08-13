@@ -23,7 +23,9 @@ const svg = app.append("svg")
 d3.csv(
   "https://raw.githubusercontent.com/allisonhorst/palmerpenguins/master/inst/extdata/penguins.csv",
   d3.autoType
-).then(penguins => {
+).then(rawPenguins => {
+
+  const penguins = rawPenguins.filter(p => typeof p.flipper_length_mm === "number" && typeof p.body_mass_g === "number");
 
   const x = d3.scaleLinear()
     .domain(d3.extent(penguins, d => d.flipper_length_mm)).nice()
