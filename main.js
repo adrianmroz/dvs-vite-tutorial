@@ -1,24 +1,52 @@
 import './style.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.js'
+import * as d3 from "d3";
 
-document.querySelector('#app').innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
-  </div>
-`
+const width = 640;
+const height = 400;
+const marginTop = 25;
+const marginRight = 20;
+const marginBottom = 35;
+const marginLeft = 40;
 
-setupCounter(document.querySelector('#counter'))
+// Think about #app as application's entrypoint
+const app = d3.selectAll("#app")
+  .data([0])
+  .join("div")
+  .attr("id", "app");
+
+const svg = app.append("svg")
+  .attr("width", width)
+  .attr("height", height)
+  .attr("viewBox", [0, 0, width, height])
+  .attr("style", "max-width: 100%; height: auto;");
+
+d3.csv(
+  "https://raw.githubusercontent.com/allisonhorst/palmerpenguins/master/inst/extdata/penguins.csv",
+  d3.autoType
+).then(penguins => {
+
+  const x = d3.scaleLinear()
+    .domain(d3.extent(penguins, d => d.flipper_length_mm)).nice()
+    .range([marginLeft, width - marginRight]);
+
+  const y = d3.scaleLinear()
+    .domain(d3.extent(penguins, d => d.body_mass_g)).nice()
+    .range([height - marginBottom, marginTop]);
+
+  svg.append("g")
+    .attr("transform", `translate(0,${height - marginBottom})`)
+    .call(d3.axisBottom(x));
+
+  svg.append("g")
+    .attr("transform", `translate(${marginLeft},0)`)
+    .call(d3.axisLeft(y));
+
+  svg.append("g")
+    .selectAll("circle")
+    .data(penguins)
+    .join("circle")
+    .filter(d => d.body_mass_g)
+    .attr("cx", d => x(d.flipper_length_mm))
+    .attr("cy", d => y(d.body_mass_g))
+    .attr("r", 3);
+});
